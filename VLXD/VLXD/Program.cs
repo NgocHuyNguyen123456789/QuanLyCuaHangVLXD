@@ -17,7 +17,7 @@ namespace VLXD
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new fDangNhap());
-           // Application.Run(new fQuanLy());
+            //Application.Run(new fQuanLy());
             //Application.Run(new fDatHang());
         }
     }

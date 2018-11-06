@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using BUS;
 using DAO;
 using DTO.Entity;
+using DTO;
 
 namespace VLXD
 {
@@ -19,22 +20,62 @@ namespace VLXD
         {
             InitializeComponent();
         }
+
         private void fQuanLy_Load(object sender, EventArgs e)
         {
-            dgvNV.AutoGenerateColumns = false;
             LoadNV();
             LoadSP();
             LoadKH();
             LoadLoaiSP();
             LoadUser();
+            LoadThongKe();
+            LoadHD();
+            LoadNSX();
+
+            cbMaNV.DataSource = nvBUS.LoadNVBUS();
+            cbMaNV.DisplayMember = "MaNV";
+
+            cbMaKH.DataSource = khBUS.LoadKHBUS();
+            cbMaKH.DisplayMember = "MaKH";
+
+            cbMaNVien.DataSource = nvBUS.LoadNVBUS();
+            cbMaNVien.DisplayMember = "MaNV";
+
+            cbMaSP.DataSource = spBUS.LoadSPBUS();
+            cbMaSP.DisplayMember = "MaSP";
+        }
+
+        private void btnDangXuat_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show("Bạn muốn đăng xuất.", "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+            switch (result)
+            {
+                case DialogResult.Cancel:
+                    break;
+                case DialogResult.OK:
+                    fDangNhap f = new fDangNhap();
+                    f.Show();
+                    this.Hide();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void btnDatHang_Click(object sender, EventArgs e)
+        {
+            fDatHang f = new fDatHang();
+            f.Show();
+            this.Hide();
         }
 
         #region NhanVien
-        NhanVienBUS nv = new NhanVienBUS();
+        NhanVienBUS nvBUS = new NhanVienBUS();
 
         private void LoadNV()
         {
-            dgvNV.DataSource = nv.LoadNVBUS();
+            dgvNV.AutoGenerateColumns = false;
+            dgvNV.DataSource = nvBUS.LoadNVBUS();
         }
 
         private void tabNV_Click(object sender, EventArgs e)
@@ -60,22 +101,14 @@ namespace VLXD
 
                 if (dgvNV.Rows[row].Cells[3].Value.ToString() == "Nam")
                 {
-                    rdbNam.Checked = true;
+                    rdbNamNV.Checked = true;
                 }
                 else
                 {
-                    rdbNu.Checked = true;
+                    rdbNuNV.Checked = true;
                 }
 
-                if (dgvNV.Rows[row].Cells[4].Value != null)
-                {
-                    dtpNgaySinhNV.Value = DateTime.Parse(dgvNV.Rows[row].Cells[4].Value.ToString());
-                }
-                else
-                {
-                    dtpNgaySinhNV.Value = new DateTime(1998, 1, 1);
-                }
-
+                dtpNgaySinhNV.Value = DateTime.Parse(dgvNV.Rows[row].Cells[4].Value.ToString());
                 txtDiaChiNV.Text = dgvNV.Rows[row].Cells[5].Value.ToString();
                 txtSdtNV.Text = dgvNV.Rows[row].Cells[6].Value.ToString();
             }
@@ -84,27 +117,27 @@ namespace VLXD
     //Them Nhan Vien
         private void AddNV()
         {
-            NhanVien nvToAdd = new NhanVien();
-            nvToAdd.HoNV = txtHoNV.Text;
-            nvToAdd.TenNV = txtTenNV.Text;
-            if (rdbNam.Checked == true)
+            NhanVien nv = new NhanVien();
+            nv.HoNV = txtHoNV.Text;
+            nv.TenNV = txtTenNV.Text;
+            if (rdbNamNV.Checked)
             {
-                nvToAdd.GioiTinh = "Nam";
+                nv.GioiTinh = "Nam";
             }
             else
             {
-                nvToAdd.GioiTinh = "Nữ";
+                nv.GioiTinh = "Nữ";
             }
-            nvToAdd.NgaySinh = dtpNgaySinhNV.Value;
-            nvToAdd.DiaChi = txtDiaChiNV.Text;
-            nvToAdd.DienThoai = txtSdtNV.Text;
+            nv.NgaySinh = dtpNgaySinhNV.Value;
+            nv.DiaChi = txtDiaChiNV.Text;
+            nv.DienThoai = txtSdtNV.Text;
 
-            NhanVienBUS nvBUS = new NhanVienBUS();
-            nvBUS.AddNVBUS(nvToAdd);
+            nvBUS.AddNVBUS(nv);
         }
+
         private void btnThemNV_Click(object sender, EventArgs e)
         {
-            if (txtMaNV.Text != "" && txtHoNV.Text != "" && txtTenNV.Text != "" && txtDiaChiNV.Text != "" && txtSdtNV.Text != "")
+            if (txtHoNV.Text != "" && txtTenNV.Text != "" && txtDiaChiNV.Text != "" && txtSdtNV.Text != "")
             {
                 DialogResult result = MessageBox.Show("Bạn muốn thêm một nhân viên mới?", "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                 switch (result)
@@ -130,8 +163,9 @@ namespace VLXD
         private void DeleteNV()
         {
             int id = int.Parse(txtMaNV.Text);
-            nv.DeleteNVBUS(id);
+            nvBUS.DeleteNVBUS(id);
         }
+
         private void btnXoaNV_Click(object sender, EventArgs e)
         {
             if (txtMaNV.Text != "")
@@ -155,6 +189,7 @@ namespace VLXD
                 MessageBox.Show("Bạn hãy chọn nhân viên muốn xóa.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
+
     //Sua Nhan Vien
         private void UpdateNV()
         {
@@ -162,7 +197,7 @@ namespace VLXD
             nvToUpdate.MaNV = int.Parse(txtMaNV.Text);
             nvToUpdate.HoNV = txtHoNV.Text;
             nvToUpdate.TenNV = txtTenNV.Text;
-            if (rdbNam.Checked == true)
+            if (rdbNamNV.Checked == true)
             {
                 nvToUpdate.GioiTinh = "Nam";
             }
@@ -174,9 +209,9 @@ namespace VLXD
             nvToUpdate.DiaChi = txtDiaChiNV.Text;
             nvToUpdate.DienThoai = txtSdtNV.Text;
 
-            NhanVienBUS nvBUS = new NhanVienBUS();
             nvBUS.UpdateNVBUS(nvToUpdate);
         }
+
         private void btnSuaNV_Click(object sender, EventArgs e)
         {
             if (txtMaNV.Text != "")
@@ -200,6 +235,7 @@ namespace VLXD
                 MessageBox.Show("Bạn hãy chọn nhân viên muốn sửa thông tin.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
+
     //Tim Nhan Vien
         private void txtTimNV_Click(object sender, EventArgs e)
         {
@@ -217,18 +253,18 @@ namespace VLXD
 
         private void SearchNV()
         {
-            
-            if (rdbTimMaNV.Checked == true)
+            if (rdbTimMaNV.Checked)
             {
                 int maNV = int.Parse(txtTimNV.Text);
-                dgvNV.DataSource = nv.SearchMaNVBUS(maNV);
+                dgvNV.DataSource = nvBUS.SearchMaNVBUS(maNV);
             }
             else
             {
                 string tenNV = txtTimNV.Text;
-                dgvNV.DataSource = nv.SearchTenNVBUS(tenNV);
+                dgvNV.DataSource = nvBUS.SearchTenNVBUS(tenNV);
             }
         }
+
         private void btnTimNV_Click(object sender, EventArgs e)
         {
             if (txtTimNV.Text != "" && txtTimNV.Text != "Nhập từ khóa............")
@@ -244,13 +280,13 @@ namespace VLXD
         #endregion
 
         #region SanPham
-        SanPhamBUS sp = new SanPhamBUS();
+        SanPhamBUS spBUS = new SanPhamBUS();
 
     //Hien thi San Pham
         private void LoadSP()
         {
             dgvSP.AutoGenerateColumns = false;
-            dgvSP.DataSource = sp.LoadSPBUS();
+            dgvSP.DataSource = spBUS.LoadSPBUS();
         }
 
         private void tabSP_Click(object sender, EventArgs e)
@@ -258,10 +294,12 @@ namespace VLXD
             LoadSP();
             txtMaSP.Text = "";
             txtTenSP.Text = "";
+            txtSoLuongTon.Text = "";
             txtDonGia.Text = "";
             txtDonViTinh.Text = "";
             txtMaLoaiSP.Text = "";
             txtMoTa.Text = "";
+            txtNSX.Text = "";
             txtTimSP.Text = "";
             picSP.Image = null;
         }
@@ -273,24 +311,36 @@ namespace VLXD
             {
                 txtMaSP.Text = dgvSP.Rows[row].Cells[0].Value.ToString();
                 txtTenSP.Text = dgvSP.Rows[row].Cells[1].Value.ToString();
-                txtDonGia.Text = dgvSP.Rows[row].Cells[2].Value.ToString();
-                txtDonViTinh.Text = dgvSP.Rows[row].Cells[3].Value.ToString();
-                txtMaLoaiSP.Text = dgvSP.Rows[row].Cells[5].Value.ToString();
-                if (dgvSP.Rows[row].Cells[4].Value != null)
+                txtSoLuongTon.Text = dgvSP.Rows[row].Cells[2].Value.ToString();
+                txtDonGia.Text = dgvSP.Rows[row].Cells[3].Value.ToString();
+                txtDonViTinh.Text = dgvSP.Rows[row].Cells[4].Value.ToString();
+                txtMaLoaiSP.Text = dgvSP.Rows[row].Cells[6].Value.ToString();
+
+                if (dgvSP.Rows[row].Cells[5].Value != null)
                 {
-                    txtMoTa.Text = dgvSP.Rows[row].Cells[4].Value.ToString();
+                    txtMoTa.Text = dgvSP.Rows[row].Cells[5].Value.ToString();
                 }
                 else
                 {
                     txtMoTa.Text = "";
                 }
-                if (dgvSP.Rows[row].Cells[6].Value.ToString() != "")
+
+                if (dgvSP.Rows[row].Cells[7].Value.ToString() != "")
                 {
-                    picSP.Image = new Bitmap(Application.StartupPath + dgvSP.Rows[row].Cells[6].Value.ToString());
+                    picSP.Image = new Bitmap(Application.StartupPath + dgvSP.Rows[row].Cells[7].Value.ToString());
                 }
                 else
                 {
                     picSP.Image = null;
+                }
+
+                if (dgvSP.Rows[row].Cells[8].Value != null)
+                {
+                    txtNSX.Text = dgvSP.Rows[row].Cells[8].Value.ToString();
+                }
+                else
+                {
+                    txtNSX.Text = "";
                 }
             }
         }
@@ -300,18 +350,22 @@ namespace VLXD
         {
             SanPham spToAdd = new SanPham();
             spToAdd.TenSP = txtTenSP.Text;
+            spToAdd.SoLuongTon = int.Parse(txtSoLuongTon.Text);
             spToAdd.DonGia = decimal.Parse(txtDonGia.Text);
             spToAdd.DonViTinh = txtDonViTinh.Text;
             spToAdd.MoTa = txtMoTa.Text;
             spToAdd.MaLoaiSP = int.Parse(txtMaLoaiSP.Text);
-            spToAdd.HinhAnh = txtHinhAnh.Text;
-            SanPhamBUS spBUS = new SanPhamBUS();
+            spToAdd.HinhAnh = txtHinhSP.Text;
+            spToAdd.MaNSX = int.Parse(txtNSX.Text);
+
             spBUS.AddSPBUS(spToAdd);
         }
 
         private void btnThemSP_Click(object sender, EventArgs e)
         {
-            if (txtMaSP.Text != "" && txtTenSP.Text != "" && txtDonGia.Text != "" && txtDonViTinh.Text != "" && txtMaLoaiSP.Text != "")
+            if (txtTenSP.Text != "" && txtDonViTinh.Text != "" && txtMaLoaiSP.Text != ""
+                && txtNSX.Text != "" && txtDonGia.Text != "" && txtSoLuongTon.Text != ""
+                && decimal.Parse(txtSoLuongTon.Text) >= 0 && decimal.Parse(txtDonGia.Text) > 0)
             {
                 DialogResult result = MessageBox.Show("Bạn muốn thêm một sản phẩm mới?", "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                 switch (result)
@@ -337,7 +391,7 @@ namespace VLXD
         private void DeleteSP()
         {
             int id = int.Parse(txtMaSP.Text);
-            sp.DeleteSPBUS(id);
+            spBUS.DeleteSPBUS(id);
         }
 
         private void btnXoaSP_Click(object sender, EventArgs e)
@@ -371,25 +425,28 @@ namespace VLXD
 
             spToUpdate.MaSP = int.Parse(txtMaSP.Text);
             spToUpdate.TenSP = txtTenSP.Text;
+            spToUpdate.SoLuongTon = int.Parse(txtSoLuongTon.Text);
             spToUpdate.DonGia = decimal.Parse(txtDonGia.Text);
             spToUpdate.DonViTinh = txtDonViTinh.Text;
             spToUpdate.MoTa = txtMoTa.Text;
             spToUpdate.MaLoaiSP = int.Parse(txtMaLoaiSP.Text);
-            spToUpdate.HinhAnh = txtHinhAnh.Text;
+            spToUpdate.HinhAnh = txtHinhSP.Text;
+            spToUpdate.MaNSX = int.Parse(txtNSX.Text);
 
-            SanPhamBUS spBUS = new SanPhamBUS();
             spBUS.UpdateSPBUS(spToUpdate);
         }
 
         private void btnSuaSP_Click(object sender, EventArgs e)
         {
-            if (txtMaSP.Text != "")
+            if (txtMaSP.Text != "" && decimal.Parse(txtDonGia.Text) > 0)
             {
-                DialogResult result = MessageBox.Show("Bạn có chắc muốn sửa sản phẩm " + txtMaSP.Text, "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+                DialogResult result = MessageBox.Show("Bạn có chắc muốn sửa sản phẩm " + txtMaSP.Text,
+                    "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
                 switch (result)
                 {
                     case DialogResult.Cancel:
                         break;
+                 
                     case DialogResult.OK:
                         UpdateSP();
                         LoadSP();
@@ -401,7 +458,8 @@ namespace VLXD
             }
             else
             {
-                MessageBox.Show("Bạn hãy chọn sản phẩm muốn sửa thông tin.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Bạn hãy chọn sản phẩm muốn sửa thông tin.\nLưu ý đơn giá phải lớn hơn 0, số lượng tồn lớn hơn hoặc bằng 0.",
+                    "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -423,15 +481,15 @@ namespace VLXD
         private void SearchSP()
         {
             
-            if (rdbTimMaSP.Checked == true)
+            if (rdbTimMaSP.Checked)
             {
                 int key = int.Parse(txtTimSP.Text);
-                dgvSP.DataSource = sp.SearchMaSPBUS(key);
+                dgvSP.DataSource = spBUS.SearchMaSPBUS(key);
             }
             else
             {
                 string key = txtTimSP.Text;
-                dgvSP.DataSource = sp.SearchTenSPBUS(key);
+                dgvSP.DataSource = spBUS.SearchTenSPBUS(key);
             }
         }
 
@@ -449,13 +507,13 @@ namespace VLXD
         #endregion
 
         #region KhachHang
-        KhachHangBUS kh = new KhachHangBUS();
+        KhachHangBUS khBUS = new KhachHangBUS();
 
     //Hiển thị KH
         private void LoadKH()
         {
             dgvKH.AutoGenerateColumns = false;
-            dgvKH.DataSource = kh.LoadKHBUS();
+            dgvKH.DataSource = khBUS.LoadKHBUS();
         }
 
         private void tabKH_Click(object sender, EventArgs e)
@@ -474,7 +532,8 @@ namespace VLXD
             if (row >= 0)
             {
                 txtMaKH.Text = dgvKH.Rows[row].Cells[0].Value.ToString();
-                txtHoKH.Text = dgvKH.Rows[row].Cells[1].Value.ToString() + " " + dgvKH.Rows[row].Cells[2].Value.ToString();
+                txtHoKH.Text = dgvKH.Rows[row].Cells[1].Value.ToString();
+                txtTenKH.Text = dgvKH.Rows[row].Cells[2].Value.ToString();
 
                 if (dgvKH.Rows[row].Cells[3].Value.ToString() == "Nam")
                 {
@@ -507,13 +566,12 @@ namespace VLXD
             khToAdd.DiaChi = txtDiaChiKH.Text;
             khToAdd.DienThoai = txtSdtKH.Text;
 
-            KhachHangBUS khBUS = new KhachHangBUS();
             khBUS.AddKHBUS(khToAdd);
         }
 
         private void btnThemKH_Click(object sender, EventArgs e)
         {
-            if (txtMaKH.Text != "" && txtHoKH.Text != "" && txtTenKH.Text != "" && txtDiaChiKH.Text != "" && txtSdtKH.Text != "")
+            if (txtHoKH.Text != "" && txtTenKH.Text != "" && txtDiaChiKH.Text != "" && txtSdtKH.Text != "")
             {
                 DialogResult result = MessageBox.Show("Thêm một khách hàng mới?", "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                 switch (result)
@@ -539,7 +597,7 @@ namespace VLXD
         private void DeleteKH()
         {
             int id = int.Parse(txtMaKH.Text);
-            kh.DeleteKHBUS(id);
+            khBUS.DeleteKHBUS(id);
         }
 
         private void btnXoaKH_Click(object sender, EventArgs e)
@@ -584,7 +642,6 @@ namespace VLXD
             khToUpdate.DiaChi = txtDiaChiKH.Text;
             khToUpdate.DienThoai = txtSdtKH.Text;
 
-            KhachHangBUS khBUS = new KhachHangBUS();
             khBUS.UpdateKHBUS(khToUpdate);
         }
 
@@ -629,15 +686,15 @@ namespace VLXD
 
         private void SearchKH()
         {
-            if (rdbTimMaKH.Checked == true)
+            if (rdbTimMaKH.Checked)
             {
                 int key = int.Parse(txtTimKH.Text);
-                dgvKH.DataSource = kh.SearchMaKHBUS(key);
+                dgvKH.DataSource = khBUS.SearchMaKHBUS(key);
             }
             else
             {
                 string key = txtTimKH.Text;
-                dgvKH.DataSource = kh.SearchTenKHBUS(key);
+                dgvKH.DataSource = khBUS.SearchTenKHBUS(key);
             }
             
         }
@@ -656,13 +713,13 @@ namespace VLXD
         #endregion
 
         #region LoaiSanPham
-        LoaiSanPhamBUS loaiSP = new LoaiSanPhamBUS();
+        LoaiSanPhamBUS loaiSPBUS = new LoaiSanPhamBUS();
 
     //Hien thi Loai SP
         private void LoadLoaiSP()
         {
             dgvLoai.AutoGenerateColumns = false;
-            dgvLoai.DataSource = loaiSP.LoadLoaiSPBUS();
+            dgvLoai.DataSource = loaiSPBUS.LoadLoaiSPBUS();
         }
 
         private void tabLoaiSP_Click(object sender, EventArgs e)
@@ -688,13 +745,12 @@ namespace VLXD
             LoaiSanPham loaiToAdd = new LoaiSanPham();
             loaiToAdd.TenLoai = txtTenLoai.Text;
 
-            LoaiSanPhamBUS loaiBUS = new LoaiSanPhamBUS();
-            loaiBUS.AddLoaiSPBUS(loaiToAdd);
+            loaiSPBUS.AddLoaiSPBUS(loaiToAdd);
         }
 
         private void btnThemLoai_Click(object sender, EventArgs e)
         {
-            if (txtMaLoai.Text != "" && txtTenLoai.Text != "")
+            if (txtTenLoai.Text != "")
             {
                 DialogResult result = MessageBox.Show("Bạn muốn thêm một loại sản phẩm mới?", "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                 switch (result)
@@ -720,14 +776,14 @@ namespace VLXD
         private void DeleteLoaiSP()
         {
             int id = int.Parse(txtMaLoai.Text);
-            loaiSP.DeleteLoaiSPBUS(id);
+            loaiSPBUS.DeleteLoaiSPBUS(id);
         }
 
         private void btnXoaLoai_Click(object sender, EventArgs e)
         {
             if (txtMaLoai.Text != "")
             {
-                DialogResult result = MessageBox.Show("Bạn có chắc muốn xóa loại sản phẩm?" + txtMaNV.Text, "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+                DialogResult result = MessageBox.Show("Bạn có chắc muốn xóa loại sản phẩm?" + txtMaLoai.Text, "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
                 switch (result)
                 {
                     case DialogResult.Cancel:
@@ -753,15 +809,14 @@ namespace VLXD
             loaiToUpdate.MaLoaiSP = int.Parse(txtMaLoai.Text);
             loaiToUpdate.TenLoai = txtTenLoai.Text;
 
-            LoaiSanPhamBUS loaiBUS = new LoaiSanPhamBUS();
-            loaiBUS.UpdateLoaiSPBUS(loaiToUpdate);
+            loaiSPBUS.UpdateLoaiSPBUS(loaiToUpdate);
         }
 
         private void btnSuaLoai_Click(object sender, EventArgs e)
         {
             if (txtMaLoai.Text != "")
             {
-                DialogResult result = MessageBox.Show("Bạn có chắc muốn sửa loại sản phẩm." + txtMaNV.Text, "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+                DialogResult result = MessageBox.Show("Bạn có chắc muốn sửa loại sản phẩm " + txtMaLoai.Text, "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
                 switch (result)
                 {
                     case DialogResult.Cancel:
@@ -784,16 +839,15 @@ namespace VLXD
     //Tim Loai SP
         private void SearchLoaiSP()
         {
-            
-            if (rdbTimMaLoai.Checked == true)
+            if (rdbTimMaLoai.Checked)
             {
                 int key = int.Parse(txtTimLoai.Text);
-                dgvLoai.DataSource = loaiSP.SearchMaLoaiSPBUS(key);
+                dgvLoai.DataSource = loaiSPBUS.SearchMaLoaiSPBUS(key);
             }
             else
             {
                 string key = txtTimLoai.Text;
-                dgvLoai.DataSource = loaiSP.SearchTenLoaiSPBUS(key);
+                dgvLoai.DataSource = loaiSPBUS.SearchTenLoaiSPBUS(key);
             }
         }
 
@@ -827,7 +881,7 @@ namespace VLXD
         #region TaiKhoan
 
         TaiKhoanBUS userBUS = new TaiKhoanBUS();
-    //Hien thi
+    //Hien thi 
         private void LoadUser()
         {
             dgvUser.AutoGenerateColumns = false;
@@ -859,7 +913,7 @@ namespace VLXD
         {
             if (e.ColumnIndex == 2 && e.Value != null)
             {
-                e.Value = new String('x', e.Value.ToString().Length);
+                e.Value = new String('*', e.Value.ToString().Length);
             }
         }
 
@@ -872,6 +926,8 @@ namespace VLXD
                 txtMaTaiKhoan.Text = dgvUser.Rows[row].Cells[0].Value.ToString();
                 txtTenDangNhap.Text = dgvUser.Rows[row].Cells[1].Value.ToString();
                 txtMatKhau.Text = dgvUser.Rows[row].Cells[2].Value.ToString();
+                cbChucVu.Text = dgvUser.Rows[row].Cells[3].Value.ToString();
+                cbMaNVien.Text = dgvUser.Rows[row].Cells[4].Value.ToString();
             }
         }
 
@@ -881,13 +937,15 @@ namespace VLXD
             TaiKhoan userToAdd = new TaiKhoan();
             userToAdd.TenTaiKhoan = txtTenDangNhap.Text;
             userToAdd.MatKhau = txtMatKhau.Text;
-            TaiKhoanBUS userBUS = new TaiKhoanBUS();
+            userToAdd.ChucVu = cbChucVu.Text;
+            userToAdd.MaNV = int.Parse(cbMaNVien.Text);
+
             userBUS.AddUserBUS(userToAdd);
         }
 
         private void btnThemUser_Click(object sender, EventArgs e)
         {
-            if (txtTenDangNhap.Text != "" || txtMatKhau.Text != "")
+            if (txtTenDangNhap.Text != "" && txtMatKhau.Text != "" && cbChucVu.Text != "")
             {
                 DialogResult result = MessageBox.Show("Bạn muốn thêm một tài khoản mới?", "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                 switch (result)
@@ -947,6 +1005,9 @@ namespace VLXD
             user.MaTaiKhoan = int.Parse(txtMaTaiKhoan.Text);
             user.TenTaiKhoan = txtTenDangNhap.Text;
             user.MatKhau = txtMatKhau.Text;
+            user.ChucVu = cbChucVu.Text;
+            user.MaNV = int.Parse(cbMaNVien.Text);
+
             userBUS.UpdateUserBUS(user);
         }
 
@@ -975,7 +1036,524 @@ namespace VLXD
         }
 
     //Tim Tai Khoan
+        private void SearchTaiKhoan()
+        {
+            if (rdbTimMaUser.Checked)
+            {
+                int key = int.Parse(txtTimUser.Text);
+                dgvUser.DataSource = userBUS.SearchMaDangNhap(key);
+            }
+            else
+            {
+                string key = txtTimUser.Text;
+                dgvUser.DataSource = userBUS.SearchTenDangNhap(key);
+            }
+        }
+
+        private void btnTimUser_Click(object sender, EventArgs e)
+        {
+            if (txtTimUser.Text != "" && txtTimUser.Text != "Nhập từ khóa............")
+            {
+                SearchTaiKhoan();
+            }
+            else
+            {
+                MessageBox.Show("Hãy nhập từ khóa để tìm kiếm.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void txtTimUser_Click(object sender, EventArgs e)
+        {
+            txtTimLoai.Text = "";
+            txtTimLoai.ForeColor = Color.Black;
+        }
+
+        private void txtTimUser_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                btnTimUser_Click(sender, e);
+            }
+        }
         #endregion
-        
+
+        #region Thống kê
+        HoaDonBUS hdBUS = new HoaDonBUS();
+
+        private void tabThongKe_Click(object sender, EventArgs e)
+        {
+            LoadThongKe();
+        }
+
+        private void LoadThongKe()
+        {
+            dgvThongKe.AutoGenerateColumns = false;
+            dgvThongKe.DataSource = hdBUS.LoadHDBUS();
+        }
+
+        private void SearchNgayDatHang()
+        {
+            DateTime ngayBD, ngayKT;
+            ngayBD = dtpNgayBD.Value;
+            ngayKT = dtpNgayKT.Value;
+            var r = hdBUS.SearchNgayDatHangBUS(ngayBD, ngayKT);
+            dgvThongKe.DataSource = hdBUS.SearchNgayDatHangBUS(ngayBD, ngayKT);
+        }
+
+        private void btnThongKe_Click(object sender, EventArgs e)
+        {
+            if (dtpNgayBD.Value < dtpNgayKT.Value)
+            {
+                SearchNgayDatHang();
+            }
+            else
+            {
+                MessageBox.Show("Hãy kiểm tra xem ngày bắt đầu có trước ngày kết thúc không.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        #endregion
+
+        #region Hóa đơn
+        ChiTietHDBUS cthdBUS = new ChiTietHDBUS();
+    //Hien thi 
+        private void tabHD_Click(object sender, EventArgs e)
+        {
+            LoadHD();
+            txtSoLuong.Text = "";
+            txtGiamGia.Text = "";
+            dtpNgayDatHang.Value = DateTime.Now;
+            dtpNgayGiaoHang.Value = DateTime.Now;
+        }
+
+        private void LoadHD()
+        {
+            dgvHD.AutoGenerateColumns = false;
+            dgvHD.DataSource = hdBUS.LoadHDBUS();
+        }
+
+        private void cbMaKH_SelectedValueChanged(object sender, EventArgs e)
+        {
+            ComboBox cb = sender as ComboBox;
+            if (cb.SelectedValue != null)
+            {
+                KhachHang k = cb.SelectedValue as KhachHang;
+                txtTenKHang.Text = (k.HoKH + " " + k.TenKH).ToString();
+            }
+        }
+
+        private void cbMaNV_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ComboBox cb = sender as ComboBox;
+            if (cb.SelectedValue != null)
+            {
+                NhanVien nv = cb.SelectedValue as NhanVien;
+                txtTenNVien.Text = (nv.HoNV + " " + nv.TenNV).ToString();
+            }
+        }
+
+        private void cbMaSP_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ComboBox cb = sender as ComboBox;
+            if (cb.SelectedValue != null)
+            {
+                SanPham sp = cb.SelectedValue as SanPham;
+                txtTenSPham.Text = sp.TenSP.ToString();
+                txtGiaBan.Text = (sp.DonGia + sp.DonGia * 10/100).ToString();
+            }
+        }
+
+        string oldMaSP = null;
+        private void dgvHD_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            int row = e.RowIndex;
+            if (row >= 0)
+            {
+                txtMaHD.Text = dgvHD.Rows[row].Cells[0].Value.ToString();
+                cbMaKH.Text = dgvHD.Rows[row].Cells[1].Value.ToString();
+                cbMaNV.Text = dgvHD.Rows[row].Cells[2].Value.ToString();
+                dtpNgayDatHang.Value = DateTime.Parse(dgvHD.Rows[row].Cells[3].Value.ToString());
+                dtpNgayGiaoHang.Value = DateTime.Parse(dgvHD.Rows[row].Cells[4].Value.ToString());
+                oldMaSP = cbMaSP.Text = dgvHD.Rows[row].Cells[5].Value.ToString();
+                txtGiaBan.Text = dgvHD.Rows[row].Cells[6].Value.ToString();
+                txtSoLuong.Text = dgvHD.Rows[row].Cells[7].Value.ToString();
+                txtGiamGia.Text = dgvHD.Rows[row].Cells[8].Value.ToString();
+                txtThanhTien.Text = dgvHD.Rows[row].Cells[9].Value.ToString();
+            }
+        }
+
+    //Them HD
+        private void btnThanhToan_Click(object sender, EventArgs e)
+        {
+            if (txtSoLuong.Text != "" && int.Parse(txtSoLuong.Text) > 0
+                && txtGiamGia.Text != "" && double.Parse(txtGiamGia.Text) >= 0)
+            {
+                double a, b, c;
+                a = double.Parse(txtGiaBan.Text);
+                b = double.Parse(txtSoLuong.Text);
+                c = double.Parse(txtGiamGia.Text);
+                txtThanhTien.Text = (a * b - (a * b * c / 100)).ToString();
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng nhập Đúng và Đầy Đủ thông tin."
+                    + "\n Số lượng phải lớn hơn 0."
+                    + "\n Giảm giá phải lớn hơn hoặc bằng 0.");
+            }
+        }
+
+        private void AddHD()
+        {
+            HoaDon hd = new HoaDon();
+            hd.MaKH = int.Parse(cbMaKH.Text);
+            hd.MaNV = int.Parse(cbMaNV.Text);
+            hd.NgayDatHang = dtpNgayDatHang.Value;
+            hd.NgayGiaoHang = dtpNgayGiaoHang.Value;
+
+            ChiTietHD cthd = new ChiTietHD();
+            cthd.MaSP = int.Parse(cbMaSP.Text);
+            cthd.GiaBan = decimal.Parse(txtGiaBan.Text);
+            cthd.SoLuong  = int.Parse(txtSoLuong.Text);
+            cthd.GiamGia  = double.Parse(txtGiamGia.Text);
+            cthd.ThanhTien = decimal.Parse(txtThanhTien.Text);
+
+            hdBUS.AddHDBUS(hd, cthd);
+        }
+
+        private void btnThemHD_Click(object sender, EventArgs e)
+        {
+            if (dtpNgayGiaoHang.Value.Date > dtpNgayDatHang.Value.Date 
+                && txtMaHD.Text == "" && txtGiamGia.Text != ""
+                && txtSoLuong.Text != "" && int.Parse(txtSoLuong.Text) > 0
+                && txtThanhTien.Text != "" && int.Parse(txtThanhTien.Text) > 0)
+            {
+                DialogResult result = MessageBox.Show("Bạn muốn lập hóa đơn mới?",
+                    "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+                switch (result)
+                {
+                    case DialogResult.Cancel:
+                        break;
+
+                    case DialogResult.OK:
+                        if (hdBUS.KtraConHangBUS(int.Parse(txtMaSP.Text)) == 0)
+                        {
+                            AddHD();
+                            LoadHD();
+                            MessageBox.Show("Lập hóa đơn thành công.");
+                        }
+                        else
+	                    {
+                            MessageBox.Show("Rất tiếc, sản phẩm này tạm hết hàng.",
+                                "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+	                    }
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng nhập Đúng và Đầy Đủ thông tin."
+                +"\nLưu ý ngày giao hàng phải luôn sau ngày đặt hàng 1 ngày,"
+                +"số lượng và thành tiền phải lớn hơn 0 và % giảm giá phải lớn hơn hoặc bằng 0.",
+                    "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+    //Xoa HD
+        private void DeleteHD()
+        {
+            int id = int.Parse(txtMaHD.Text);
+            hdBUS.DeleteHDBUS(id);
+        }
+
+        private void btnXoaHD_Click(object sender, EventArgs e)
+        {
+            if (txtMaHD.Text != "")
+            {
+                DialogResult result = MessageBox.Show("Bạn có chắc muốn xóa hóa đơn " + txtMaHD.Text, "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+                switch (result)
+                {
+                    case DialogResult.Cancel:
+                        break;
+                    case DialogResult.OK:
+                        DeleteHD();
+                        LoadHD();
+                        MessageBox.Show("Đã xóa thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                MessageBox.Show("Bạn hãy chọn hóa đơn muốn xóa.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+    //Sua HD
+        private void UpdateHD()
+        {
+            HoaDon hd = new HoaDon();
+            hd.MaHD = int.Parse(txtMaHD.Text);
+            hd.MaNV = int.Parse(cbMaNV.Text);
+            hd.MaKH = int.Parse(cbMaKH.Text);
+            hd.NgayDatHang = dtpNgayDatHang.Value;
+            hd.NgayGiaoHang = dtpNgayGiaoHang.Value;
+
+            ChiTietHD cthd = new ChiTietHD();
+            cthd.MaHD = int.Parse(txtMaHD.Text);
+            cthd.GiaBan = decimal.Parse(txtGiaBan.Text);
+            cthd.SoLuong = int.Parse(txtSoLuong.Text);
+            cthd.GiamGia = double.Parse(txtGiamGia.Text);
+            cthd.ThanhTien = decimal.Parse(txtThanhTien.Text);
+
+            hdBUS.UpdateHDBUS(hd, cthd);
+        }
+
+        private void btnSuaHD_Click(object sender, EventArgs e)
+        {
+            if (txtMaHD.Text != "" && int.Parse(oldMaSP) == int.Parse(cbMaSP.Text))
+            {
+                DialogResult result = MessageBox.Show("Bạn có chắc muốn sửa hóa đơn " + txtMaHD.Text + "\nLưu ý không thể đổi sản phẩm khác.",
+                    "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+                switch (result)
+                {
+                    case DialogResult.Cancel:
+                        break;
+                    case DialogResult.OK:
+                        UpdateHD();
+                        LoadHD();
+                        MessageBox.Show("Đã sửa thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                MessageBox.Show("Hãy chọn hóa đơn muốn sửa thông tin.\nLưu ý không thể đổi thành sản phẩm khác.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+    //Tim HD
+        private void txtTimHD_Click(object sender, EventArgs e)
+        {
+            txtTimHD.Text = "";
+            txtTimHD.ForeColor = Color.Black;
+        }
+
+        private void txtTimHD_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                btnTimHD_Click(sender, e);
+            }
+        }
+
+        private void SearchHD()
+        {
+            if (rdbTimMaHD.Checked)
+            {
+                int maHD = int.Parse(txtTimHD.Text);
+                dgvHD.DataSource = hdBUS.SearchMaHDBUS(maHD);
+            }
+            else
+            {
+                int maKH = int.Parse(txtTimHD.Text);
+                dgvHD.DataSource = hdBUS.SearchMaKHBUS(maKH);
+            }
+        }
+
+        private void btnTimHD_Click(object sender, EventArgs e)
+        {
+            if (txtTimHD.Text != "" && txtTimHD.Text != "Nhập từ khóa............")
+            {
+               SearchHD();
+            }
+            else
+            {
+                MessageBox.Show("Hãy nhập từ khóa để tìm kiếm.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        #endregion
+
+        #region Nhà sản xuất
+
+        NhaSanXuatBUS nsxBUS = new NhaSanXuatBUS();
+
+    //Hien thi
+        private void tabNSX_Click(object sender, EventArgs e)
+        {
+            txtMaNSX.Text = "";
+            txtTenNSX.Text = "";
+            txtDiaChiNSX.Text = "";
+            txtDienThoaiNSX.Text = "";
+            txtTimNSX.Text = "";
+            LoadNSX();
+        }
+
+        private void LoadNSX()
+        {
+            dgvNSX.AutoGenerateColumns = false;
+            dgvNSX.DataSource = nsxBUS.LoadNSXBUS();
+        }
+
+        private void dgvNSX_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            int row = e.RowIndex;
+            if (row >= 0)
+            {
+                txtMaNSX.Text = dgvNSX.Rows[row].Cells[0].Value.ToString();
+                txtTenNSX.Text = dgvNSX.Rows[row].Cells[1].Value.ToString();
+                txtDiaChiNSX.Text = dgvNSX.Rows[row].Cells[2].Value.ToString();
+                txtDienThoaiNSX.Text = dgvNSX.Rows[row].Cells[3].Value.ToString();
+            }
+        }
+
+    //Them NSX
+        private void AddNSX()
+        {
+            NhaSanXuat nsxToAdd = new NhaSanXuat();
+            nsxToAdd.TenCongTyNSX = txtTenNSX.Text;
+            nsxToAdd.DiaChiNSX = txtDiaChiNSX.Text;
+            nsxToAdd.DienThoaiNSX = txtDienThoaiNSX.Text;
+
+            nsxBUS.AddNSXBUS(nsxToAdd);
+        }
+
+        private void btnThemNSX_Click(object sender, EventArgs e)
+        {
+            if (txtTenNSX.Text != "" && txtDiaChiNSX.Text != "" && txtDienThoaiNSX.Text != "")
+            {
+                DialogResult result = MessageBox.Show("Bạn muốn thêm một nhà sản xuất mới?", "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+                switch (result)
+                {
+                    case DialogResult.Cancel:
+                        break;
+                    case DialogResult.OK:
+                        AddNSX();
+                        LoadNSX();
+                        MessageBox.Show("Đã thêm thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng nhập Đúng và Đầy Đủ thông tin.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+    //Sua NSX
+        private void UpdateNSX()
+        {
+            NhaSanXuat nsxToUpdate = new NhaSanXuat();
+            nsxToUpdate.MaNSX = int.Parse(txtMaNSX.Text);
+            nsxToUpdate.TenCongTyNSX = txtTenNSX.Text;
+            nsxToUpdate.DiaChiNSX = txtDiaChiNSX.Text;
+            nsxToUpdate.DienThoaiNSX = txtDienThoaiNSX.Text;
+
+            nsxBUS.UpdateNSXBUS(nsxToUpdate);
+        }
+
+        private void btnSuaNSX_Click(object sender, EventArgs e)
+        {
+            if (txtMaNSX.Text != "")
+            {
+                DialogResult result = MessageBox.Show("Bạn có chắc muốn sửa nhà sản xuất " + txtMaNV.Text, "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+                switch (result)
+                {
+                    case DialogResult.Cancel:
+                        break;
+                    case DialogResult.OK:
+                        UpdateNSX();
+                        LoadNSX();
+                        MessageBox.Show("Đã sửa thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                MessageBox.Show("Bạn hãy chọn nhà sản xuất muốn sửa thông tin.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+    //Xoa NSX
+        private void DeleteNSX()
+        {
+            int id = int.Parse(txtMaNSX.Text);
+            nsxBUS.DeleteNSXBUS(id);
+        }
+
+        private void btnXoaNSX_Click(object sender, EventArgs e)
+        {
+            if (txtMaNSX.Text != "")
+            {
+            DialogResult result = MessageBox.Show("Bạn có chắc muốn xóa nhà sản xuất" + txtMaNSX.Text+ "?", "Thông báo", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+                switch (result)
+                {
+                    case DialogResult.Cancel:
+                        break;
+                    case DialogResult.OK:
+                        DeleteNSX();
+                        LoadNSX();
+                        MessageBox.Show("Đã xóa thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                MessageBox.Show("Bạn hãy chọn nhà sản xuất muốn xóa.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+    //Tim NSX
+        private void txtTimNSX_Click(object sender, EventArgs e)
+        {
+            txtTimNSX.Text = "";
+            txtTimNSX.ForeColor = Color.Black;
+        }
+
+        private void txtTimNSX_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                btnTimNSX_Click(sender, e);
+            }
+        }
+
+        private void SearchNSX()
+        {
+            if (rdbMaNSX.Checked)
+            {
+                int key = int.Parse(txtTimNSX.Text);
+                dgvNSX.DataSource = nsxBUS.SearchMaNSXBUS(key);
+            }
+            else
+            {
+                string key = txtTimNSX.Text;
+                dgvNSX.DataSource = nsxBUS.SearchTenNSXBUS(key);
+            }
+        }
+
+        private void btnTimNSX_Click(object sender, EventArgs e)
+        {
+            if (txtTimNSX.Text != "" && txtTimNSX.Text != "Nhập từ khóa............")
+            {
+                SearchNSX();
+            }
+            else
+            {
+                MessageBox.Show("Hãy nhập từ khóa để tìm kiếm.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        #endregion
     }
 }
