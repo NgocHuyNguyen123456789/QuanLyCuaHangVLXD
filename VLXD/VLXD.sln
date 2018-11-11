@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VLXD", "VLXD\VLXD.csproj", "{066A8127-89AD-4A72-B878-280B68AC28A4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DAO", "DAO\DAO.csproj", "{EF22593D-52AC-4F88-9193-7CDC419E1F16}"
@@ -8,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BUS", "BUS\BUS.csproj", "{D309A248-9333-4A2A-8472-9DE7E1D6BCFA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DTO", "DTO\DTO.csproj", "{AA2C4B5F-371F-44FF-863E-F76C5D74E8F8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tester", "LoginTester\Tester.csproj", "{3B32B070-3BC5-47F4-A658-C849B6CDC37F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +35,10 @@ Global
 		{AA2C4B5F-371F-44FF-863E-F76C5D74E8F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA2C4B5F-371F-44FF-863E-F76C5D74E8F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA2C4B5F-371F-44FF-863E-F76C5D74E8F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B32B070-3BC5-47F4-A658-C849B6CDC37F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B32B070-3BC5-47F4-A658-C849B6CDC37F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B32B070-3BC5-47F4-A658-C849B6CDC37F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B32B070-3BC5-47F4-A658-C849B6CDC37F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
